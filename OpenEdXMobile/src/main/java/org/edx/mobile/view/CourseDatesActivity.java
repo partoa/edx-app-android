@@ -6,9 +6,13 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 
+import com.google.inject.Inject;
+
 import org.edx.mobile.R;
 import org.edx.mobile.base.BaseSingleFragmentActivity;
 import org.edx.mobile.model.api.EnrolledCoursesResponse;
+import org.edx.mobile.module.analytics.Analytics;
+import org.edx.mobile.module.analytics.AnalyticsRegistry;
 import org.edx.mobile.util.FileUtil;
 
 import java.io.IOException;
@@ -17,6 +21,8 @@ import static org.edx.mobile.view.Router.EXTRA_BUNDLE;
 import static org.edx.mobile.view.Router.EXTRA_COURSE_DATA;
 
 public class CourseDatesActivity extends BaseSingleFragmentActivity {
+    @Inject
+    private AnalyticsRegistry analyticsRegistry;
     private EnrolledCoursesResponse courseData;
 
     public static Intent newIntent(@NonNull Context context, @NonNull EnrolledCoursesResponse model) {
@@ -39,6 +45,8 @@ public class CourseDatesActivity extends BaseSingleFragmentActivity {
         final Bundle bundle = savedInstanceState != null ? savedInstanceState :
                 getIntent().getBundleExtra(EXTRA_BUNDLE);
         courseData = (EnrolledCoursesResponse) bundle.getSerializable(EXTRA_COURSE_DATA);
+
+        analyticsRegistry.trackScreenView(Analytics.Screens.COURSE_DATES, courseData.getCourse().getId(), null);
     }
 
     @Override
