@@ -307,6 +307,8 @@ public class AuthenticatedWebViewFragment extends BaseFragment {
     private void showLoadingProgress() {
         if (!TextUtils.isEmpty(javascript)) {
             progressBackground.setVisibility(View.VISIBLE);
+            // Hide webview to disable a11y during loading page, disabling a11y is not working in this case
+            webView.setVisibility(View.GONE);
         }
         progressWheel.setVisibility(View.VISIBLE);
     }
@@ -314,5 +316,6 @@ public class AuthenticatedWebViewFragment extends BaseFragment {
     private void hideLoadingProgress() {
         progressBackground.setVisibility(View.GONE);
         progressWheel.setVisibility(View.GONE);
+        webView.setVisibility(View.VISIBLE);
     }
 }
