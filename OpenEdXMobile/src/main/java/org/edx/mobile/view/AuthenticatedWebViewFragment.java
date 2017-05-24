@@ -1,5 +1,6 @@
 package org.edx.mobile.view;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
@@ -14,6 +15,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -50,7 +52,7 @@ public class AuthenticatedWebViewFragment extends BaseFragment {
     protected final Logger logger = new Logger(getClass().getName());
 
     private boolean pageIsLoaded;
-
+    private boolean didReceiveError;
     @InjectView(R.id.progress_bg_fullscreen)
     private View progressBackground;
 
@@ -97,14 +99,18 @@ public class AuthenticatedWebViewFragment extends BaseFragment {
         return inflater.inflate(R.layout.fragment_course_unit_webview, container, false);
     }
 
+
+    @SuppressLint({"AddJavascriptInterface", "SetJavaScriptEnabled"})
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         webView.clearCache(true);
         webView.getSettings().setJavaScriptEnabled(true);
+        if (!TextUtils.isEmpty(javascript)) {
+            webView.addJavascriptInterface(new EdxJsInterface(), "JsInterface");
+        }
         URLInterceptorWebViewClient client =
                 new URLInterceptorWebViewClient(getActivity(), webView) {
-                    private boolean didReceiveError = false;
 
                     @Override
                     public void onReceivedError(WebView view, int errorCode,
@@ -140,6 +146,12 @@ public class AuthenticatedWebViewFragment extends BaseFragment {
                     }
 
                     public void onPageFinished(WebView view, String url) {
+                        if (!NetworkUtil.isConnected(getContext())) {
+                            showErrorView(getString(R.string.reset_no_network_message), FontAwesomeIcons.fa_wifi);
+                            hideLoadingProgress();
+                            pageIsLoaded = false;
+                            return;
+                        }
                         if (didReceiveError) {
                             didReceiveError = false;
                             return;
@@ -150,7 +162,7 @@ public class AuthenticatedWebViewFragment extends BaseFragment {
                             pageIsLoaded = true;
                             hideErrorMessage();
                         }
-                        if (!TextUtils.isEmpty(javascript)) {
+                        if (pageIsLoaded && !TextUtils.isEmpty(javascript)) {
                             evaluateJavascript();
                             // Javascript evaluation takes some time, so hide progressbar after 1 sec
                             new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
@@ -174,6 +186,23 @@ public class AuthenticatedWebViewFragment extends BaseFragment {
             webView.evaluateJavascript(javascript, null);
         } else {
             webView.loadUrl("javascript:" + javascript);
+        }
+    }
+
+    public class EdxJsInterface {
+        @JavascriptInterface
+        public void showErrorMessage(@NonNull final String errorMsg) {
+            if (!TextUtils.isEmpty(errorMsg)) {
+                webView.post(
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                didReceiveError = true;
+                                showErrorView(errorMsg, FontAwesomeIcons.fa_exclamation_circle);
+                            }
+                        }
+                );
+            }
         }
     }
 
@@ -230,16 +259,20 @@ public class AuthenticatedWebViewFragment extends BaseFragment {
     private void showErrorMessage(@StringRes int errorMsg, @NonNull Icon errorIcon) {
         if (!pageIsLoaded) {
             tryToClearWebView();
-            final Context context = getContext();
-            errorTextView.setVisibility(View.VISIBLE);
-            errorTextView.setText(errorMsg);
-            errorTextView.setCompoundDrawablesWithIntrinsicBounds(null,
-                    new IconDrawable(context, errorIcon)
-                            .sizeRes(context, R.dimen.content_unavailable_error_icon_size)
-                            .colorRes(context, R.color.edx_brand_gray_back),
-                    null, null
-            );
+            showErrorView(getString(errorMsg), errorIcon);
         }
+    }
+
+    private void showErrorView(@NonNull String errorMsg, @NonNull Icon errorIcon) {
+        final Context context = getContext();
+        errorTextView.setVisibility(View.VISIBLE);
+        errorTextView.setText(errorMsg);
+        errorTextView.setCompoundDrawablesWithIntrinsicBounds(null,
+                new IconDrawable(context, errorIcon)
+                        .sizeRes(context, R.dimen.content_unavailable_error_icon_size)
+                        .colorRes(context, R.color.edx_brand_gray_back),
+                null, null
+        );
     }
 
     /**
@@ -247,7 +280,7 @@ public class AuthenticatedWebViewFragment extends BaseFragment {
      */
     private void hideErrorMessage() {
         errorTextView.setVisibility(View.GONE);
-        if (!pageIsLoaded) {
+        if (!pageIsLoaded || didReceiveError) {
             tryToLoadWebView(true);
         }
     }
@@ -282,6 +315,7 @@ public class AuthenticatedWebViewFragment extends BaseFragment {
             if (cookieManager.isSessionCookieMissingOrExpired()) {
                 cookieManager.tryToRefreshSessionCookie();
             } else {
+                didReceiveError = false;
                 webView.loadUrl(url);
             }
         }
@@ -316,6 +350,10 @@ public class AuthenticatedWebViewFragment extends BaseFragment {
     private void hideLoadingProgress() {
         progressBackground.setVisibility(View.GONE);
         progressWheel.setVisibility(View.GONE);
-        webView.setVisibility(View.VISIBLE);
+        if (didReceiveError) {
+            webView.setVisibility(View.GONE);
+        } else {
+            webView.setVisibility(View.VISIBLE);
+        }
     }
 }
