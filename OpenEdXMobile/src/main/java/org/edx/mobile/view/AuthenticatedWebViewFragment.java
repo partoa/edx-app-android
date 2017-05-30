@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -45,16 +46,11 @@ import de.greenrobot.event.EventBus;
 import roboguice.inject.InjectView;
 
 import static org.edx.mobile.util.AppConstants.EMPTY_HTML;
-import static org.edx.mobile.view.Router.ARG_JAVASCRIPT;
-import static org.edx.mobile.view.Router.ARG_URL;
 
 public class AuthenticatedWebViewFragment extends BaseFragment {
     protected final Logger logger = new Logger(getClass().getName());
-
-    private boolean pageIsLoaded;
-    private boolean didReceiveError;
-    @InjectView(R.id.progress_bg_fullscreen)
-    private View progressBackground;
+    public static final String ARG_URL = "ARG_URL";
+    public static final String ARG_JAVASCRIPT = "ARG_JAVASCRIPT";
 
     @InjectView(R.id.loading_indicator)
     private ProgressBar progressWheel;
@@ -70,18 +66,20 @@ public class AuthenticatedWebViewFragment extends BaseFragment {
 
     private String url;
     private String javascript;
+    private boolean pageIsLoaded;
+    private boolean didReceiveError;
 
     public static Fragment newInstance(@NonNull String url) {
         return newInstance(url, null);
     }
 
     public static Fragment newInstance(@NonNull String url, @Nullable String javascript) {
-        Fragment frag = new AuthenticatedWebViewFragment();
+        final Fragment fragment = new AuthenticatedWebViewFragment();
         Bundle args = new Bundle();
         args.putString(ARG_URL, url);
         args.putString(ARG_JAVASCRIPT, javascript);
-        frag.setArguments(args);
-        return frag;
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Override
@@ -164,13 +162,6 @@ public class AuthenticatedWebViewFragment extends BaseFragment {
                         }
                         if (pageIsLoaded && !TextUtils.isEmpty(javascript)) {
                             evaluateJavascript();
-                            // Javascript evaluation takes some time, so hide progressbar after 1 sec
-                            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    hideLoadingProgress();
-                                }
-                            }, 1000);
                         } else {
                             hideLoadingProgress();
                         }
@@ -183,9 +174,21 @@ public class AuthenticatedWebViewFragment extends BaseFragment {
 
     private void evaluateJavascript() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            webView.evaluateJavascript(javascript, null);
+            webView.evaluateJavascript(javascript, new ValueCallback<String>() {
+                @Override
+                public void onReceiveValue(String value) {
+                    hideLoadingProgress();
+                }
+            });
         } else {
             webView.loadUrl("javascript:" + javascript);
+            // Javascript evaluation takes some time, so hide progressbar after 1 sec
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    hideLoadingProgress();
+                }
+            }, 1000);
         }
     }
 
@@ -328,19 +331,8 @@ public class AuthenticatedWebViewFragment extends BaseFragment {
         }
     }
 
-    @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        if (isVisibleToUser) {
-            tryToLoadWebView(false);
-        } else {
-            tryToClearWebView();
-        }
-    }
-
     private void showLoadingProgress() {
         if (!TextUtils.isEmpty(javascript)) {
-            progressBackground.setVisibility(View.VISIBLE);
             // Hide webview to disable a11y during loading page, disabling a11y is not working in this case
             webView.setVisibility(View.GONE);
         }
@@ -348,7 +340,6 @@ public class AuthenticatedWebViewFragment extends BaseFragment {
     }
 
     private void hideLoadingProgress() {
-        progressBackground.setVisibility(View.GONE);
         progressWheel.setVisibility(View.GONE);
         if (didReceiveError) {
             webView.setVisibility(View.GONE);

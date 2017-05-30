@@ -39,8 +39,6 @@ import de.greenrobot.event.EventBus;
 
 @Singleton
 public class Router {
-    public static final String ARG_URL = "ARG_URL";
-    public static final String ARG_JAVASCRIPT = "ARG_JAVASCRIPT";
     public static final String EXTRA_ANNOUNCEMENTS = "announcements";
     public static final String EXTRA_BUNDLE = "bundle";
     public static final String EXTRA_COURSE_ID = "course_id";

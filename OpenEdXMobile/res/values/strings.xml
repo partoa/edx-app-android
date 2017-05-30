@@ -166,12 +166,12 @@
     <string name="handouts_subtitle">Find important course information</string>
     <!-- Row of announcement on dashboard screen -->
     <string name="announcement_title">Announcements</string>
-    <!-- Title text for the important dates section of the course dashboard  -->
+    <!-- Title text for the important dates section on the course dashboard  -->
     <string name="course_dates_title">Important dates</string>
     <!-- Row of announcement on dashboard screen -->
     <!-- NOTE: TODO - not final one -->
     <string name="announcement_subtitle">Keep up with the latest news</string>
-    <!-- Subtitle text describing the important dates section of the course dashboard -->
+    <!-- Subtitle text describing the important dates section on the course dashboard -->
     <string name="course_dates_subtitle">Keep track of deadlines and stay on track</string>
     <!-- Accessible content description of school code label a course -->
     <string name="school_code">School Code</string>
