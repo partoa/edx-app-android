@@ -47,6 +47,10 @@ import roboguice.inject.InjectView;
 
 import static org.edx.mobile.util.AppConstants.EMPTY_HTML;
 
+/**
+ * Provides a webview which authenticates the user before loading a page,
+ * Javascript can also be passed in arguments for evaluation.
+ */
 public class AuthenticatedWebViewFragment extends BaseFragment {
     protected final Logger logger = new Logger(getClass().getName());
     public static final String ARG_URL = "ARG_URL";
