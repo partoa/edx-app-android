@@ -332,7 +332,7 @@ public abstract class FindCoursesBaseActivity extends BaseFragmentActivity imple
     }
 
     @Override
-    public void onPageLoadError() {
+    public void onPageLoadError(WebView view, int errorCode, String description, String failingUrl) {
         isWebViewLoaded = false;
         showOfflineMessage();
     }

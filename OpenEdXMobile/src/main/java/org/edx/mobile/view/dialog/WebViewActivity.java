@@ -51,7 +51,7 @@ public class WebViewActivity extends BaseFragmentActivity {
             }
 
             @Override
-            public void onPageLoadError() {
+            public void onPageLoadError(WebView view, int errorCode, String description, String failingUrl) {
                 progress.setVisibility(View.GONE);
             }
 

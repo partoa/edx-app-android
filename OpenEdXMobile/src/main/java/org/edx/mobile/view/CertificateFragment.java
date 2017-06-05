@@ -102,7 +102,7 @@ public class CertificateFragment extends BaseFragment {
             }
 
             @Override
-            public void onPageLoadError() {
+            public void onPageLoadError(WebView view, int errorCode, String description, String failingUrl) {
                 loadingIndicator.setVisibility(View.GONE);
             }
 
