@@ -129,6 +129,14 @@ public class URLInterceptorWebViewClient extends WebViewClient {
     }
 
     @Override
+    public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
+        super.onReceivedHttpError(view, request, errorResponse);
+        if (pageStatusListener != null) {
+            pageStatusListener.onPageLoadError(view, request, errorResponse);
+        }
+    }
+
+    @Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
         if (actionListener == null) {
             logger.warn("you have not set IActionLister to this WebViewClient, " +
@@ -268,7 +276,7 @@ public class URLInterceptorWebViewClient extends WebViewClient {
     /**
      * Page state callbacks.
      */
-    public static interface IPageStatusListener {
+    public interface IPageStatusListener {
         /**
          * Callback that indicates page loading has started.
          */
@@ -285,9 +293,13 @@ public class URLInterceptorWebViewClient extends WebViewClient {
         void onPageLoadError(WebView view, int errorCode, String description, String failingUrl);
 
         /**
+         * Callback that indicates error during page load.
+         */
+        void onPageLoadError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse);
+
+        /**
          * Callback that indicates that the page is 50 percent loaded.
          */
         void onPagePartiallyLoaded();
     }
-
 }

@@ -1,9 +1,13 @@
 package org.edx.mobile.view;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
 import org.edx.mobile.R;
@@ -54,6 +58,14 @@ public class CourseUnitWebViewFragment extends CourseUnitFragment {
             @Override
             public void onPageLoadError(WebView view, int errorCode, String description, String failingUrl) {
                 if (failingUrl != null && failingUrl.equals(view.getUrl())) {
+                    ViewPagerDownloadManager.instance.done(CourseUnitWebViewFragment.this, false);
+                }
+            }
+
+            @Override
+            @TargetApi(Build.VERSION_CODES.M)
+            public void onPageLoadError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
+                if (request.getUrl().toString().equals(view.getUrl())) {
                     ViewPagerDownloadManager.instance.done(CourseUnitWebViewFragment.this, false);
                 }
             }
