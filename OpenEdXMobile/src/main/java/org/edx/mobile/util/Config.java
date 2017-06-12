@@ -536,6 +536,10 @@ public class Config {
         return getBoolean(MY_VIDEOS_ENABLED, false);
     }
 
+    public boolean isCourseDatesEnabled() {
+        return getBoolean(COURSE_DATES_ENABLED, false);
+    }
+
     @NonNull
     public EnrollmentConfig getCourseDiscoveryConfig() {
         return getObjectOrNewInstance(COURSE_ENROLLMENT, EnrollmentConfig.class);
