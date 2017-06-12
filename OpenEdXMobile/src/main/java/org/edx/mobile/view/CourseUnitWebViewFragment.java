@@ -24,12 +24,9 @@ public class CourseUnitWebViewFragment extends CourseUnitFragment {
 
     public static CourseUnitWebViewFragment newInstance(HtmlBlockModel unit) {
         CourseUnitWebViewFragment fragment = new CourseUnitWebViewFragment();
-
-        // Supply num input as an argument.
         Bundle args = new Bundle();
         args.putSerializable(Router.EXTRA_COURSE_UNIT, unit);
         fragment.setArguments(args);
-
         return fragment;
     }
 
@@ -47,7 +44,6 @@ public class CourseUnitWebViewFragment extends CourseUnitFragment {
         authWebView.getWebViewClient().setPageStatusListener(new URLInterceptorWebViewClient.IPageStatusListener() {
             @Override
             public void onPageStarted() {
-
             }
 
             @Override
@@ -64,7 +60,6 @@ public class CourseUnitWebViewFragment extends CourseUnitFragment {
 
             @Override
             public void onPagePartiallyLoaded() {
-
             }
         });
 

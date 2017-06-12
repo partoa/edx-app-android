@@ -36,9 +36,6 @@ import org.edx.mobile.module.prefs.LoginPrefs;
 import org.edx.mobile.services.EdxCookieManager;
 import org.edx.mobile.util.NetworkUtil;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import de.greenrobot.event.EventBus;
 import roboguice.RoboGuice;
 import roboguice.inject.InjectView;
@@ -217,12 +214,6 @@ public class AuthenticatedWebView extends FrameLayout {
         showLoadingProgress();
 
         if (!TextUtils.isEmpty(url)) {
-            Map<String, String> map = new HashMap<>();
-            final String token = loginPrefs.getAuthorizationHeader();
-            if (token != null) {
-                map.put("Authorization", token);
-            }
-
             // Requery the session cookie if unavailable or expired.
             final EdxCookieManager cookieManager = EdxCookieManager.getSharedInstance(getContext());
             if (cookieManager.isSessionCookieMissingOrExpired()) {
